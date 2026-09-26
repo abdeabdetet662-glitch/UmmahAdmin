@@ -1,0 +1,27 @@
+<?xml version="1.0" encoding="utf-8"?>
+<manifest xmlns:android="http://schemas.android.com/apk/res/android">
+
+    <uses-permission android:name="android.permission.INTERNET" />
+
+    <application
+        android:label="لوحة أُمّة"
+        android:icon="@mipmap/ic_launcher"
+        android:theme="@android:style/Theme.DeviceDefault"
+        android:allowBackup="false">
+
+        <activity android:name=".AdminLoginActivity" android:exported="true">
+            <intent-filter>
+                <action android:name="android.intent.action.MAIN" />
+                <category android:name="android.intent.category.LAUNCHER" />
+            </intent-filter>
+        </activity>
+
+        <activity android:name=".AdminMainActivity" android:exported="false" />
+        <activity android:name=".AdminCitizensActivity" android:exported="false" />
+        <activity android:name=".AdminComplaintsActivity" android:exported="false" />
+        <activity android:name=".AdminVotesActivity" android:exported="false" />
+        <activity android:name=".AdminChatActivity" android:exported="false" />
+        <activity android:name=".AdminTreasuryActivity" android:exported="false" />
+        <activity android:name=".AdminElectionActivity" android:exported="false" />
+    </application>
+</manifest>
