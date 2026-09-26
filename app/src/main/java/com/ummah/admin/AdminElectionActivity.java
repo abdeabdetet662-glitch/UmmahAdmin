@@ -47,7 +47,7 @@ public class AdminElectionActivity extends Activity {
             .setTitle("تصفير الانتخابات")
             .setMessage("سيتم حذف كل الأصوات وإرجاع كل المرشحين إلى 0.")
             .setPositiveButton("تصفير", (d, w) -> am.resetElection(new AdminManager.OnDone() {
-                @Override public void onSuccess() { Toast.makeText(this, "✅", Toast.LENGTH_SHORT).show(); }
+                @Override public void onSuccess() { Toast.makeText(AdminElectionActivity.this, "✅", Toast.LENGTH_SHORT).show(); }
                 @Override public void onError(String m) {}
             }))
             .setNegativeButton("إلغاء", null).show());

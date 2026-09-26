@@ -80,7 +80,7 @@ public class AdminVotesActivity extends Activity {
             del.setText("🗑️");
             del.setTextSize(12);
             del.setOnClickListener(v2 -> am.deleteConstitutionVote((String) v.get("_id"), new AdminManager.OnDone() {
-                @Override public void onSuccess() { Toast.makeText(this, "✅", Toast.LENGTH_SHORT).show(); }
+                @Override public void onSuccess() { Toast.makeText(AdminVotesActivity.this, "✅", Toast.LENGTH_SHORT).show(); }
                 @Override public void onError(String m) {}
             }));
             card.addView(del);
@@ -110,8 +110,8 @@ public class AdminVotesActivity extends Activity {
                 try {
                     int a = Integer.parseInt(art.getText().toString().trim());
                     am.addConstitutionVote(id.getText().toString().trim(), a, true, new AdminManager.OnDone() {
-                        @Override public void onSuccess() { Toast.makeText(this, "✅", Toast.LENGTH_SHORT).show(); }
-                        @Override public void onError(String m) { Toast.makeText(this, m, Toast.LENGTH_SHORT).show(); }
+                        @Override public void onSuccess() { Toast.makeText(AdminVotesActivity.this, "✅", Toast.LENGTH_SHORT).show(); }
+                        @Override public void onError(String m) { Toast.makeText(AdminVotesActivity.this, m, Toast.LENGTH_SHORT).show(); }
                     });
                 } catch (Exception e) { Toast.makeText(this, "خطأ", Toast.LENGTH_SHORT).show(); }
             })

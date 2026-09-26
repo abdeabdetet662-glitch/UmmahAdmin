@@ -80,12 +80,12 @@ public class AdminTreasuryActivity extends Activity {
                     long amt = Long.parseLong(input.getText().toString().trim());
                     if (isAdd) {
                         am.addTreasury(amt, new AdminManager.OnDone() {
-                            @Override public void onSuccess() { Toast.makeText(this, "✅", Toast.LENGTH_SHORT).show(); }
+                            @Override public void onSuccess() { Toast.makeText(AdminTreasuryActivity.this, "✅", Toast.LENGTH_SHORT).show(); }
                             @Override public void onError(String m) {}
                         });
                     } else {
                         am.setTreasury(amt, new AdminManager.OnDone() {
-                            @Override public void onSuccess() { Toast.makeText(this, "✅", Toast.LENGTH_SHORT).show(); }
+                            @Override public void onSuccess() { Toast.makeText(AdminTreasuryActivity.this, "✅", Toast.LENGTH_SHORT).show(); }
                             @Override public void onError(String m) {}
                         });
                     }

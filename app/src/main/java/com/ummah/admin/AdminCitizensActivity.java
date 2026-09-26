@@ -202,10 +202,10 @@ public class AdminCitizensActivity extends Activity {
                 am.sendGift("الإدارة", c.nationalId, g[0], g[1], g[2], Integer.parseInt(g[3]),
                     new AdminManager.OnDone() {
                         @Override public void onSuccess() {
-                            Toast.makeText(this, "✅ تم إرسال الهدية", Toast.LENGTH_LONG).show();
+                            Toast.makeText(AdminCitizensActivity.this, "✅ تم إرسال الهدية", Toast.LENGTH_LONG).show();
                         }
                         @Override public void onError(String m) {
-                            Toast.makeText(this, "❌ " + m, Toast.LENGTH_SHORT).show();
+                            Toast.makeText(AdminCitizensActivity.this, "❌ " + m, Toast.LENGTH_SHORT).show();
                         }
                     });
             })

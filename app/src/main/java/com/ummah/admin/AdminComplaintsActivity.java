@@ -86,7 +86,7 @@ public class AdminComplaintsActivity extends Activity {
             del.setOnClickListener(v -> {
                 new AlertDialog.Builder(this).setTitle("حذف الشكوى").setPositiveButton("حذف", (d, w) ->
                     am.deleteComplaint(k.id, new AdminManager.OnDone() {
-                        @Override public void onSuccess() { Toast.makeText(this, "✅", Toast.LENGTH_SHORT).show(); }
+                        @Override public void onSuccess() { Toast.makeText(AdminComplaintsActivity.this, "✅", Toast.LENGTH_SHORT).show(); }
                         @Override public void onError(String m) {}
                     })).setNegativeButton("إلغاء", null).show();
             });
