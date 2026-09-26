@@ -135,13 +135,34 @@ public class AdminCitizensActivity extends Activity {
         name.setPadding(0, 6, 0, 4);
         card.addView(name);
 
-        // الرقم الوطني
+        // الرقم الوطني + زر نسخ
+        LinearLayout idRow = new LinearLayout(this);
+        idRow.setOrientation(LinearLayout.HORIZONTAL);
+        idRow.setGravity(Gravity.CENTER_VERTICAL);
+        idRow.setPadding(0, 6, 0, 6);
+
         TextView id = new TextView(this);
         id.setText("🆔 " + c.nationalId);
-        id.setTextColor(Color.parseColor("#757575"));
-        id.setTextSize(10);
+        id.setTextColor(Color.parseColor("#9E9E9E"));
+        id.setTextSize(11);
         id.setTypeface(Typeface.MONOSPACE);
-        card.addView(id);
+        id.setLayoutParams(new LinearLayout.LayoutParams(0, LinearLayout.LayoutParams.WRAP_CONTENT, 1));
+        idRow.addView(id);
+
+        TextView copyBtn = new TextView(this);
+        copyBtn.setText(" 📋 نسخ ");
+        copyBtn.setTextColor(Color.WHITE);
+        copyBtn.setTextSize(11);
+        copyBtn.setPadding(16, 8, 16, 8);
+        copyBtn.setBackgroundColor(Color.parseColor("#1565C0"));
+        copyBtn.setOnClickListener(v -> {
+            ClipboardManager cm = (ClipboardManager) getSystemService(Context.CLIPBOARD_SERVICE);
+            cm.setPrimaryClip(ClipData.newPlainText("national_id", c.nationalId));
+            Toast.makeText(AdminCitizensActivity.this, "✅ تم نسخ الرقم", Toast.LENGTH_SHORT).show();
+        });
+        idRow.addView(copyBtn);
+
+        card.addView(idRow);
 
         // الرصيد
         TextView bal = new TextView(this);
