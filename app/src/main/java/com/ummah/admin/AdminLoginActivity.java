@@ -19,12 +19,23 @@ public class AdminLoginActivity extends Activity {
     protected void onCreate(Bundle b) {
         super.onCreate(b);
 
+        // تحقق من تهيئة Firebase
+        try {
+            com.google.firebase.FirebaseApp.initializeApp(this);
+        } catch (Exception e) {
+            android.util.Log.e("UMMAH_ADMIN", "Firebase init error", e);
+        }
+
         // إذا مسجّل الدخول مسبقاً
-        SharedPreferences prefs = getSharedPreferences("admin", MODE_PRIVATE);
-        if (prefs.getBoolean("logged_in", false)) {
-            startActivity(new Intent(this, AdminMainActivity.class));
-            finish();
-            return;
+        try {
+            SharedPreferences prefs = getSharedPreferences("admin", MODE_PRIVATE);
+            if (prefs.getBoolean("logged_in", false)) {
+                startActivity(new Intent(this, AdminMainActivity.class));
+                finish();
+                return;
+            }
+        } catch (Exception e) {
+            android.util.Log.e("UMMAH_ADMIN", "Prefs error", e);
         }
 
         LinearLayout root = new LinearLayout(this);
