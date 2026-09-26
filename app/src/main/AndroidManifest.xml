@@ -23,6 +23,7 @@
         <activity android:name=".AdminChatActivity" android:exported="false" />
         <activity android:name=".AdminTreasuryActivity" android:exported="false" />
         <activity android:name=".AdminElectionActivity" android:exported="false" />
+        <activity android:name=".AdminProposalsActivity" android:exported="false" />
         <activity android:name=".AdminReportsActivity" android:exported="false" />
         <activity android:name=".AdminBlockedActivity" android:exported="false" />
         <activity android:name=".AdminMutedActivity" android:exported="false" />
