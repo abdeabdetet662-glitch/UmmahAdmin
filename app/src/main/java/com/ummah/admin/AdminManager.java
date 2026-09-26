@@ -350,4 +350,110 @@ public class AdminManager {
             });
         });
     }
+
+    // ==================== نظام الحظر والكتم والإبلاغ ====================
+
+    // حظر / رفع حظر
+    public void setBlocked(String nationalId, boolean blocked, OnDone cb) {
+        db.collection("citizens").document(nationalId)
+            .update("blocked", blocked)
+            .addOnSuccessListener(a -> cb.onSuccess())
+            .addOnFailureListener(e -> cb.onError(e.getMessage()));
+    }
+
+    // كتم / رفع كتم
+    public void setMuted(String nationalId, boolean muted, long untilTimestamp, OnDone cb) {
+        java.util.Map<String, Object> u = new HashMap<>();
+        u.put("muted", muted);
+        u.put("mutedUntil", untilTimestamp);
+        db.collection("citizens").document(nationalId).update(u)
+            .addOnSuccessListener(a -> cb.onSuccess())
+            .addOnFailureListener(e -> cb.onError(e.getMessage()));
+    }
+
+    // ==================== قائمة المحظورين ====================
+    public interface BannedListener { void onList(List<Citizen> list); }
+
+    public ListenerRegistration listenBlocked(final BannedListener l) {
+        return db.collection("citizens")
+            .whereEqualTo("blocked", true)
+            .addSnapshotListener((snap, e) -> {
+                if (snap == null) return;
+                List<Citizen> list = new ArrayList<>();
+                for (QueryDocumentSnapshot d : snap) {
+                    Citizen c = new Citizen();
+                    c.nationalId = d.getId();
+                    c.name = d.getString("name");
+                    Long b = d.getLong("balance");
+                    c.balance = b != null ? b.intValue() : 0;
+                    list.add(c);
+                }
+                l.onList(list);
+            });
+    }
+
+    public ListenerRegistration listenMuted(final BannedListener l) {
+        return db.collection("citizens")
+            .whereEqualTo("muted", true)
+            .addSnapshotListener((snap, e) -> {
+                if (snap == null) return;
+                List<Citizen> list = new ArrayList<>();
+                for (QueryDocumentSnapshot d : snap) {
+                    Citizen c = new Citizen();
+                    c.nationalId = d.getId();
+                    c.name = d.getString("name");
+                    Long b = d.getLong("balance");
+                    c.balance = b != null ? b.intValue() : 0;
+                    list.add(c);
+                }
+                l.onList(list);
+            });
+    }
+
+    // ==================== الإبلاغات ====================
+    public static class Report {
+        public String id;
+        public String reporterName;
+        public String reportedName;
+        public String reportedId;
+        public String messageText;
+        public String messageId;
+        public long timestamp;
+    }
+
+    public interface ReportsListener { void onList(List<Report> list); }
+
+    public ListenerRegistration listenReports(final ReportsListener l) {
+        return db.collection("reports").addSnapshotListener((snap, e) -> {
+            if (snap == null) return;
+            List<Report> list = new ArrayList<>();
+            for (QueryDocumentSnapshot d : snap) {
+                Report r = new Report();
+                r.id = d.getId();
+                r.reporterName = d.getString("reporterName");
+                r.reportedName = d.getString("reportedName");
+                r.reportedId = d.getString("reportedId");
+                r.messageText = d.getString("messageText");
+                r.messageId = d.getString("messageId");
+                Long t = d.getLong("timestamp");
+                r.timestamp = t != null ? t : 0;
+                list.add(r);
+            }
+            java.util.Collections.sort(list, (a, b) -> Long.compare(b.timestamp, a.timestamp));
+            l.onList(list);
+        });
+    }
+
+    public void deleteReport(String id, OnDone cb) {
+        db.collection("reports").document(id).delete()
+            .addOnSuccessListener(a -> cb.onSuccess())
+            .addOnFailureListener(e -> cb.onError(e.getMessage()));
+    }
+
+    public void deleteReportAndMessage(String reportId, String messageId, OnDone cb) {
+        if (messageId != null && !messageId.isEmpty()) {
+            db.collection("global_chat").document(messageId).delete();
+        }
+        deleteReport(reportId, cb);
+    }
 }

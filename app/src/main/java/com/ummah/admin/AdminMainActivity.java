@@ -53,6 +53,9 @@ public class AdminMainActivity extends Activity {
 
         // الأزرار
         addBtn(root, "👥  المواطنون", "#0D47A1", AdminCitizensActivity.class);
+        addBtn(root, "📢  الإبلاغات", "#FFC107", AdminReportsActivity.class);
+        addBtn(root, "🚫  المحظورون", "#C62828", AdminBlockedActivity.class);
+        addBtn(root, "🔇  المكتومون", "#EF6C00", AdminMutedActivity.class);
         addBtn(root, "⚖️  الشكاوى", "#5D4037", AdminComplaintsActivity.class);
         addBtn(root, "🏛️  التصويت على الدستور", "#4E342E", AdminVotesActivity.class);
         addBtn(root, "📰  الاقتراحات", "#4A148C", AdminProposalsActivity.class);
