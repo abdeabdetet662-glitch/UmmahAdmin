@@ -1,7 +1,6 @@
 package com.ummah.admin;
 
 import com.google.firebase.auth.FirebaseAuth;
-import com.google.firebase.firestore.DocumentSnapshot;
 import com.google.firebase.firestore.FieldValue;
 import com.google.firebase.firestore.FirebaseFirestore;
 import com.google.firebase.firestore.ListenerRegistration;
@@ -18,7 +17,7 @@ public class AdminManager {
     private final FirebaseFirestore db;
     private final FirebaseAuth auth;
 
-    public static final String ADMIN_PASSWORD = "ummah2026"; // غيّرها
+    public static final String ADMIN_PASSWORD = "ummah2026";
 
     private AdminManager() {
         db = FirebaseFirestore.getInstance();
@@ -43,6 +42,8 @@ public class AdminManager {
     public static class Citizen {
         public String nationalId, name, joinDate, country;
         public int balance;
+        public long lastSeen;
+        public boolean online, blocked, muted;
     }
 
     public interface CitizensListener { void onList(List<Citizen> list); }
@@ -59,6 +60,14 @@ public class AdminManager {
                 c.country = d.getString("country");
                 Long b = d.getLong("balance");
                 c.balance = b != null ? b.intValue() : 0;
+                Long ls = d.getLong("lastSeen");
+                c.lastSeen = ls != null ? ls : 0;
+                Boolean on = d.getBoolean("online");
+                c.online = on != null && on;
+                Boolean bl = d.getBoolean("blocked");
+                c.blocked = bl != null && bl;
+                Boolean mu = d.getBoolean("muted");
+                c.muted = mu != null && mu;
                 list.add(c);
             }
             l.onList(list);
@@ -79,9 +88,132 @@ public class AdminManager {
             .addOnFailureListener(e -> cb.onError(e.getMessage()));
     }
 
-    public void banCitizen(String nationalId, boolean banned, OnDone cb) {
+    public void setBlocked(String nationalId, boolean blocked, OnDone cb) {
         db.collection("citizens").document(nationalId)
-            .update("banned", banned)
+            .update("blocked", blocked)
+            .addOnSuccessListener(a -> cb.onSuccess())
+            .addOnFailureListener(e -> cb.onError(e.getMessage()));
+    }
+
+    public void setMuted(String nationalId, boolean muted, long until, OnDone cb) {
+        Map<String, Object> u = new HashMap<>();
+        u.put("muted", muted);
+        u.put("mutedUntil", until);
+        db.collection("citizens").document(nationalId).update(u)
+            .addOnSuccessListener(a -> cb.onSuccess())
+            .addOnFailureListener(e -> cb.onError(e.getMessage()));
+    }
+
+    public void deleteCitizen(String nationalId, OnDone cb) {
+        db.collection("citizens").document(nationalId).delete()
+            .addOnSuccessListener(a -> {
+                db.collection("global_chat").whereEqualTo("nationalId", nationalId).get()
+                    .addOnSuccessListener(q -> {
+                        for (QueryDocumentSnapshot d : q) d.getReference().delete();
+                        cb.onSuccess();
+                    })
+                    .addOnFailureListener(e -> cb.onSuccess());
+            })
+            .addOnFailureListener(e -> cb.onError(e.getMessage()));
+    }
+
+    public interface SingleCitizenListener {
+        void onFound(Citizen c);
+        void onNotFound();
+    }
+
+    public void loadCitizenDetails(String nationalId, final SingleCitizenListener l) {
+        db.collection("citizens").document(nationalId).get()
+            .addOnSuccessListener(doc -> {
+                if (!doc.exists()) { l.onNotFound(); return; }
+                Citizen c = new Citizen();
+                c.nationalId = doc.getId();
+                c.name = doc.getString("name");
+                c.joinDate = doc.getString("joinDate");
+                c.country = doc.getString("country");
+                Long b = doc.getLong("balance");
+                c.balance = b != null ? b.intValue() : 0;
+                Long ls = doc.getLong("lastSeen");
+                c.lastSeen = ls != null ? ls : 0;
+                Boolean on = doc.getBoolean("online");
+                c.online = on != null && on;
+                Boolean bl = doc.getBoolean("blocked");
+                c.blocked = bl != null && bl;
+                Boolean mu = doc.getBoolean("muted");
+                c.muted = mu != null && mu;
+                l.onFound(c);
+            })
+            .addOnFailureListener(e -> l.onNotFound());
+    }
+
+    // ============ المحظورون / المكتومون ============
+    public interface BannedListener { void onList(List<Citizen> list); }
+
+    public ListenerRegistration listenBlocked(final BannedListener l) {
+        return db.collection("citizens").whereEqualTo("blocked", true)
+            .addSnapshotListener((snap, e) -> {
+                if (snap == null) return;
+                List<Citizen> list = new ArrayList<>();
+                for (QueryDocumentSnapshot d : snap) {
+                    Citizen c = new Citizen();
+                    c.nationalId = d.getId();
+                    c.name = d.getString("name");
+                    Long b = d.getLong("balance");
+                    c.balance = b != null ? b.intValue() : 0;
+                    list.add(c);
+                }
+                l.onList(list);
+            });
+    }
+
+    public ListenerRegistration listenMuted(final BannedListener l) {
+        return db.collection("citizens").whereEqualTo("muted", true)
+            .addSnapshotListener((snap, e) -> {
+                if (snap == null) return;
+                List<Citizen> list = new ArrayList<>();
+                for (QueryDocumentSnapshot d : snap) {
+                    Citizen c = new Citizen();
+                    c.nationalId = d.getId();
+                    c.name = d.getString("name");
+                    Long b = d.getLong("balance");
+                    c.balance = b != null ? b.intValue() : 0;
+                    list.add(c);
+                }
+                l.onList(list);
+            });
+    }
+
+    // ============ الإبلاغات ============
+    public static class Report {
+        public String id, reporterName, reportedName, reportedId, messageText, messageId;
+        public long timestamp;
+    }
+
+    public interface ReportsListener { void onList(List<Report> list); }
+
+    public ListenerRegistration listenReports(final ReportsListener l) {
+        return db.collection("reports").addSnapshotListener((snap, e) -> {
+            if (snap == null) return;
+            List<Report> list = new ArrayList<>();
+            for (QueryDocumentSnapshot d : snap) {
+                Report r = new Report();
+                r.id = d.getId();
+                r.reporterName = d.getString("reporterName");
+                r.reportedName = d.getString("reportedName");
+                r.reportedId = d.getString("reportedId");
+                r.messageText = d.getString("messageText");
+                r.messageId = d.getString("messageId");
+                Long t = d.getLong("timestamp");
+                r.timestamp = t != null ? t : 0;
+                list.add(r);
+            }
+            java.util.Collections.sort(list, (a, b) -> Long.compare(b.timestamp, a.timestamp));
+            l.onList(list);
+        });
+    }
+
+    public void deleteReport(String id, OnDone cb) {
+        db.collection("reports").document(id).delete()
             .addOnSuccessListener(a -> cb.onSuccess())
             .addOnFailureListener(e -> cb.onError(e.getMessage()));
     }
@@ -97,7 +229,6 @@ public class AdminManager {
         gift.put("meaning", meaning);
         gift.put("price", price);
         gift.put("timestamp", System.currentTimeMillis());
-
         db.collection("gifts").add(gift)
             .addOnSuccessListener(x -> cb.onSuccess())
             .addOnFailureListener(e -> cb.onError(e.getMessage()));
@@ -110,7 +241,6 @@ public class AdminManager {
         n.put("content", message);
         n.put("timestamp", System.currentTimeMillis());
         n.put("isBroadcast", true);
-
         db.collection("news").add(n)
             .addOnSuccessListener(d -> cb.onSuccess())
             .addOnFailureListener(e -> cb.onError(e.getMessage()));
@@ -142,11 +272,10 @@ public class AdminManager {
                                         Long tb = doc.getLong("balance");
                                         treasuryVal[0] = tb != null ? tb : 0;
                                         db.collection("constitution_votes").get()
-                                            .addOnSuccessListener(q7 -> {
+                                            .addOnSuccessListener(q7 ->
                                                 l.onStats(counts[0], counts[1], counts[2],
-                                                        counts[3], counts[4], counts[5],
-                                                        treasuryVal[0], q7.size());
-                                            });
+                                                    counts[3], counts[4], counts[5],
+                                                    treasuryVal[0], q7.size()));
                                     });
                             });
                         });
@@ -156,7 +285,7 @@ public class AdminManager {
         });
     }
 
-    // ============ الشكاوى (المحكمة) ============
+    // ============ الشكاوى ============
     public static class Complaint {
         public String id, plaintiffName, defendantName, claim, recommendation, status;
         public long timestamp;
@@ -186,20 +315,18 @@ public class AdminManager {
     }
 
     public void updateComplaintStatus(String caseId, String status, OnDone cb) {
-        db.collection("court_cases").document(caseId)
-            .update("status", status)
+        db.collection("court_cases").document(caseId).update("status", status)
             .addOnSuccessListener(a -> cb.onSuccess())
             .addOnFailureListener(e -> cb.onError(e.getMessage()));
     }
 
     public void deleteComplaint(String caseId, OnDone cb) {
-        db.collection("court_cases").document(caseId)
-            .delete()
+        db.collection("court_cases").document(caseId).delete()
             .addOnSuccessListener(a -> cb.onSuccess())
             .addOnFailureListener(e -> cb.onError(e.getMessage()));
     }
 
-    // ============ التصويت على الدستور ============
+    // ============ التصويت ============
     public interface VotesListener { void onList(List<Map<String, Object>> list); }
 
     public ListenerRegistration listenConstitutionVotes(final VotesListener l) {
@@ -228,8 +355,7 @@ public class AdminManager {
         v.put("yes", yes);
         v.put("timestamp", System.currentTimeMillis());
         v.put("adminAdded", true);
-
-        db.collection("constitution_votes").document("admin_" + System.currentTimeMillis() + "_" + article).set(v)
+        db.collection("constitution_votes").document("admin_" + System.currentTimeMillis()).set(v)
             .addOnSuccessListener(a -> cb.onSuccess())
             .addOnFailureListener(e -> cb.onError(e.getMessage()));
     }
@@ -269,8 +395,7 @@ public class AdminManager {
     public interface ChatsListener { void onList(List<Map<String, Object>> list); }
 
     public ListenerRegistration listenGlobalChat(final ChatsListener l) {
-        return db.collection("global_chat")
-            .limit(200)
+        return db.collection("global_chat").limit(200)
             .addSnapshotListener((snap, e) -> {
                 if (snap == null) return;
                 List<Map<String, Object>> list = new ArrayList<>();
@@ -343,117 +468,9 @@ public class AdminManager {
         db.collection("votes").get().addOnSuccessListener(q -> {
             for (QueryDocumentSnapshot d : q) d.getReference().delete();
             db.collection("candidates").get().addOnSuccessListener(q2 -> {
-                for (QueryDocumentSnapshot d : q2) {
-                    d.getReference().update("votes", 0);
-                }
+                for (QueryDocumentSnapshot d : q2) d.getReference().update("votes", 0);
                 cb.onSuccess();
             });
         });
-    }
-
-    // ==================== نظام الحظر والكتم والإبلاغ ====================
-
-    // حظر / رفع حظر
-    public void setBlocked(String nationalId, boolean blocked, OnDone cb) {
-        db.collection("citizens").document(nationalId)
-            .update("blocked", blocked)
-            .addOnSuccessListener(a -> cb.onSuccess())
-            .addOnFailureListener(e -> cb.onError(e.getMessage()));
-    }
-
-    // كتم / رفع كتم
-    public void setMuted(String nationalId, boolean muted, long untilTimestamp, OnDone cb) {
-        java.util.Map<String, Object> u = new HashMap<>();
-        u.put("muted", muted);
-        u.put("mutedUntil", untilTimestamp);
-        db.collection("citizens").document(nationalId).update(u)
-            .addOnSuccessListener(a -> cb.onSuccess())
-            .addOnFailureListener(e -> cb.onError(e.getMessage()));
-    }
-
-    // ==================== قائمة المحظورين ====================
-    public interface BannedListener { void onList(List<Citizen> list); }
-
-    public ListenerRegistration listenBlocked(final BannedListener l) {
-        return db.collection("citizens")
-            .whereEqualTo("blocked", true)
-            .addSnapshotListener((snap, e) -> {
-                if (snap == null) return;
-                List<Citizen> list = new ArrayList<>();
-                for (QueryDocumentSnapshot d : snap) {
-                    Citizen c = new Citizen();
-                    c.nationalId = d.getId();
-                    c.name = d.getString("name");
-                    Long b = d.getLong("balance");
-                    c.balance = b != null ? b.intValue() : 0;
-                    list.add(c);
-                }
-                l.onList(list);
-            });
-    }
-
-    public ListenerRegistration listenMuted(final BannedListener l) {
-        return db.collection("citizens")
-            .whereEqualTo("muted", true)
-            .addSnapshotListener((snap, e) -> {
-                if (snap == null) return;
-                List<Citizen> list = new ArrayList<>();
-                for (QueryDocumentSnapshot d : snap) {
-                    Citizen c = new Citizen();
-                    c.nationalId = d.getId();
-                    c.name = d.getString("name");
-                    Long b = d.getLong("balance");
-                    c.balance = b != null ? b.intValue() : 0;
-                    list.add(c);
-                }
-                l.onList(list);
-            });
-    }
-
-    // ==================== الإبلاغات ====================
-    public static class Report {
-        public String id;
-        public String reporterName;
-        public String reportedName;
-        public String reportedId;
-        public String messageText;
-        public String messageId;
-        public long timestamp;
-    }
-
-    public interface ReportsListener { void onList(List<Report> list); }
-
-    public ListenerRegistration listenReports(final ReportsListener l) {
-        return db.collection("reports").addSnapshotListener((snap, e) -> {
-            if (snap == null) return;
-            List<Report> list = new ArrayList<>();
-            for (QueryDocumentSnapshot d : snap) {
-                Report r = new Report();
-                r.id = d.getId();
-                r.reporterName = d.getString("reporterName");
-                r.reportedName = d.getString("reportedName");
-                r.reportedId = d.getString("reportedId");
-                r.messageText = d.getString("messageText");
-                r.messageId = d.getString("messageId");
-                Long t = d.getLong("timestamp");
-                r.timestamp = t != null ? t : 0;
-                list.add(r);
-            }
-            java.util.Collections.sort(list, (a, b) -> Long.compare(b.timestamp, a.timestamp));
-            l.onList(list);
-        });
-    }
-
-    public void deleteReport(String id, OnDone cb) {
-        db.collection("reports").document(id).delete()
-            .addOnSuccessListener(a -> cb.onSuccess())
-            .addOnFailureListener(e -> cb.onError(e.getMessage()));
-    }
-
-    public void deleteReportAndMessage(String reportId, String messageId, OnDone cb) {
-        if (messageId != null && !messageId.isEmpty()) {
-            db.collection("global_chat").document(messageId).delete();
-        }
-        deleteReport(reportId, cb);
     }
 }
