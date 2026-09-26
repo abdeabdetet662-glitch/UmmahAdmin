@@ -473,4 +473,11 @@ public class AdminManager {
             });
         });
     }
+
+    public void deleteReportAndMessage(String reportId, String messageId, OnDone cb) {
+        if (messageId != null && !messageId.isEmpty()) {
+            db.collection("global_chat").document(messageId).delete();
+        }
+        deleteReport(reportId, cb);
+    }
 }
