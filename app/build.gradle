@@ -5,19 +5,32 @@ plugins {
 
 android {
     namespace 'com.ummah.admin'
-    compileSdk 34
+    compileSdk 35
 
     defaultConfig {
         applicationId "com.ummah.admin"
         minSdk 21
-        targetSdk 34
-        versionCode 1
-        versionName "1.0"
+        targetSdk 35
+        versionCode 2
+        versionName "2.0"
+    }
+
+    signingConfigs {
+        release {
+            storeFile file("../ummah-release.keystore")
+            storePassword "ummah2026"
+            keyAlias "ummah"
+            keyPassword "ummah2026"
+        }
     }
 
     buildTypes {
         release {
             minifyEnabled false
+            signingConfig signingConfigs.release
+        }
+        debug {
+            signingConfig signingConfigs.release
         }
     }
 
@@ -34,8 +47,19 @@ android {
     }
 }
 
+configurations.all {
+    resolutionStrategy {
+        force 'org.jetbrains.kotlin:kotlin-stdlib:1.9.10'
+        force 'org.jetbrains.kotlin:kotlin-stdlib-jdk7:1.9.10'
+        force 'org.jetbrains.kotlin:kotlin-stdlib-jdk8:1.9.10'
+    }
+}
+
 dependencies {
+    implementation 'androidx.core:core:1.12.0'
     implementation platform('com.google.firebase:firebase-bom:32.7.0')
     implementation 'com.google.firebase:firebase-auth'
     implementation 'com.google.firebase:firebase-firestore'
+    implementation 'com.google.firebase:firebase-messaging'
+    implementation 'com.github.bumptech.glide:glide:4.16.0'
 }
