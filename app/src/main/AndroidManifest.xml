@@ -44,5 +44,10 @@
 
             <activity android:name=".AdminPresidentActivity" android:exported="false" />
 
+    
+        <activity
+            android:name=".AdminFeatureControlActivity"
+            android:exported="false"
+            android:screenOrientation="portrait" />
     </application>
 </manifest>

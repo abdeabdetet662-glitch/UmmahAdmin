@@ -81,6 +81,7 @@ public class AdminMainActivity extends Activity {
         addSecondaryBtn(root, "👑  الانتخابات", AdminElectionActivity.class);
 
         addSection(root, "🔧  النظام");
+        addSecondaryBtn(root, "🎛️  التحكم في الميزات", AdminFeatureControlActivity.class);
         addSecondaryBtn(root, "⚙️  الإعدادات", AdminSettingsActivity.class);
 
         Button logout = new Button(this);
