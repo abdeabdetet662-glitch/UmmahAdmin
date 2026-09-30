@@ -11,7 +11,6 @@ import android.widget.Button;
 import android.widget.LinearLayout;
 import android.widget.ScrollView;
 import android.widget.TextView;
-import android.widget.Toast;
 
 public class AdminMainActivity extends Activity {
 
@@ -33,7 +32,6 @@ public class AdminMainActivity extends Activity {
         root.setPadding(30, 50, 30, 60);
         scroll.addView(root);
 
-        // ═══ Header ═══
         TextView icon = new TextView(this);
         icon.setText("👑");
         icon.setTextSize(60);
@@ -51,53 +49,39 @@ public class AdminMainActivity extends Activity {
         sub.setPadding(0, 0, 0, 24);
         root.addView(sub);
 
-        // ═══ Stats ═══
         statsContainer = new LinearLayout(this);
         statsContainer.setOrientation(LinearLayout.VERTICAL);
         root.addView(statsContainer);
 
-        // ═══ Section: الإدارة ═══
         addSection(root, "⚙️  الإدارة");
-
         addPrimaryBtn(root, "📊  إحصائيات شاملة", AdminStatsActivity.class);
         addPrimaryBtn(root, "📢  البث العام", AdminBroadcastActivity.class);
         addPrimaryBtn(root, "📜  سجل النشاط", AdminLogActivity.class);
 
-        // ═══ Section: المواطنون ═══
         addSection(root, "👥  المواطنون");
-
         addSecondaryBtn(root, "👥  قائمة المواطنين", AdminCitizensActivity.class);
         addSecondaryBtn(root, "🚫  المحظورون", AdminBlockedActivity.class);
         addSecondaryBtn(root, "🔇  المكتومون", AdminMutedActivity.class);
         addSecondaryBtn(root, "💌  رسائل خاصة", AdminPrivateMessagesActivity.class);
 
-        // ═══ Section: المحتوى ═══
         addSection(root, "💬  المحتوى");
-
         addSecondaryBtn(root, "💬  إدارة الدردشة", AdminChatActivity.class);
         addSecondaryBtn(root, "📢  الإبلاغات", AdminReportsActivity.class);
         addSecondaryBtn(root, "⚖️  الشكاوى", AdminComplaintsActivity.class);
         addSecondaryBtn(root, "📰  الأخبار", AdminNewsActivity.class);
 
-        // ═══ Section: الاقتصاد ═══
         addSection(root, "💰  الاقتصاد");
-
         addSecondaryBtn(root, "🏦  الخزينة العامة", AdminTreasuryActivity.class);
         addSecondaryBtn(root, "🛒  إدارة السوق", AdminMarketActivity.class);
 
-        // ═══ Section: الحكم ═══
         addSection(root, "🏛️  الحكم");
-
         addSecondaryBtn(root, "🗳️  التصويت على الدستور", AdminVotesActivity.class);
         addSecondaryBtn(root, "📰  الاقتراحات", AdminProposalsActivity.class);
         addSecondaryBtn(root, "👑  الانتخابات", AdminElectionActivity.class);
 
-        // ═══ Section: النظام ═══
         addSection(root, "🔧  النظام");
-
         addSecondaryBtn(root, "⚙️  الإعدادات", AdminSettingsActivity.class);
 
-        // زر الخروج
         Button logout = new Button(this);
         logout.setText("🚪  تسجيل الخروج");
         logout.setTextSize(14);
@@ -162,13 +146,14 @@ public class AdminMainActivity extends Activity {
 
     private void loadStats() {
         am.loadStats(new AdminManager.StatsListener() {
-            @Override public void onStats(final AdminManager.Stats s) {
+            @Override public void onStats(int citizens, int gifts, int transfers, int news,
+                                           int proposals, int complaints, long treasury, int votes) {
                 runOnUiThread(() -> {
                     statsContainer.removeAllViews();
-                    addStat(statsContainer, "👥", "المواطنون", String.valueOf(s.citizens), "#0D47A1");
-                    addStat(statsContainer, "🟢", "متصلون الآن", String.valueOf(s.onlineNow), "#2E7D32");
-                    addStat(statsContainer, "💰", "إجمالي الرصيد", s.totalBalance + " Đ", "#D4AF37");
-                    addStat(statsContainer, "🏦", "الخزينة", s.treasury + " Đ", "#1A237E");
+                    addStat(statsContainer, "👥", "المواطنون", String.valueOf(citizens), "#0D47A1");
+                    addStat(statsContainer, "🎁", "الهدايا", String.valueOf(gifts), "#C2185B");
+                    addStat(statsContainer, "💸", "التحويلات", String.valueOf(transfers), "#1B5E20");
+                    addStat(statsContainer, "🏦", "الخزينة", treasury + " Đ", "#1A237E");
                 });
             }
         });

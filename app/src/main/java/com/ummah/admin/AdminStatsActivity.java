@@ -35,17 +35,17 @@ public class AdminStatsActivity extends Activity {
         setContentView(scroll);
 
         am.loadStats(new AdminManager.StatsListener() {
-            @Override public void onStats(final AdminManager.Stats s) {
+            @Override public void onStats(int citizens, int gifts, int transfers, int news,
+                                           int proposals, int complaints, long treasury, int votes) {
                 runOnUiThread(() -> {
-                    addCard(container, "👥", "المواطنون المسجلون", String.valueOf(s.citizens), "#0D47A1");
-                    addCard(container, "🟢", "متصلون الآن", String.valueOf(s.onlineNow), "#2E7D32");
-                    addCard(container, "💰", "إجمالي الرصيد المتداول", s.totalBalance + " Đ", "#D4AF37");
-                    addCard(container, "🏦", "رصيد الخزينة", s.treasury + " Đ", "#1A237E");
-                    addCard(container, "🎁", "الهدايا المرسلة", String.valueOf(s.gifts), "#C2185B");
-                    addCard(container, "💸", "التحويلات", String.valueOf(s.transfers), "#1B5E20");
-                    addCard(container, "📰", "الأخبار", String.valueOf(s.news), "#4A148C");
-                    addCard(container, "🗳️", "الاقتراحات", String.valueOf(s.proposals), "#00695C");
-                    addCard(container, "⚖️", "الشكاوى", String.valueOf(s.complaints), "#5D4037");
+                    addCard(container, "👥", "المواطنون المسجلون", String.valueOf(citizens), "#0D47A1");
+                    addCard(container, "💰", "رصيد الخزينة", treasury + " Đ", "#1A237E");
+                    addCard(container, "🎁", "الهدايا المرسلة", String.valueOf(gifts), "#C2185B");
+                    addCard(container, "💸", "التحويلات", String.valueOf(transfers), "#1B5E20");
+                    addCard(container, "📰", "الأخبار", String.valueOf(news), "#4A148C");
+                    addCard(container, "🗳️", "الاقتراحات", String.valueOf(proposals), "#00695C");
+                    addCard(container, "⚖️", "الشكاوى", String.valueOf(complaints), "#5D4037");
+                    addCard(container, "🏛️", "أصوات الدستور", String.valueOf(votes), "#4E342E");
                 });
             }
         });
