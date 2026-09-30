@@ -28,5 +28,19 @@
         <activity android:name=".AdminReportsActivity" android:exported="false" />
         <activity android:name=".AdminBlockedActivity" android:exported="false" />
         <activity android:name=".AdminMutedActivity" android:exported="false" />
+            <activity android:name=".AdminStatsActivity" android:exported="false" />
+
+            <activity android:name=".AdminBroadcastActivity" android:exported="false" />
+
+            <activity android:name=".AdminLogActivity" android:exported="false" />
+
+            <activity android:name=".AdminPrivateMessagesActivity" android:exported="false" />
+
+            <activity android:name=".AdminMarketActivity" android:exported="false" />
+
+            <activity android:name=".AdminNewsActivity" android:exported="false" />
+
+            <activity android:name=".AdminSettingsActivity" android:exported="false" />
+
     </application>
 </manifest>
