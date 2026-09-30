@@ -42,5 +42,7 @@
 
             <activity android:name=".AdminSettingsActivity" android:exported="false" />
 
+            <activity android:name=".AdminPresidentActivity" android:exported="false" />
+
     </application>
 </manifest>

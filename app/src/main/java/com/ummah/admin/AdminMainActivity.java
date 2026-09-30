@@ -57,6 +57,7 @@ public class AdminMainActivity extends Activity {
         addPrimaryBtn(root, "📊  إحصائيات شاملة", AdminStatsActivity.class);
         addPrimaryBtn(root, "📢  البث العام", AdminBroadcastActivity.class);
         addPrimaryBtn(root, "📜  سجل النشاط", AdminLogActivity.class);
+        addPrimaryBtn(root, "👑  إدارة الرؤساء", AdminPresidentActivity.class);
 
         addSection(root, "👥  المواطنون");
         addSecondaryBtn(root, "👥  قائمة المواطنين", AdminCitizensActivity.class);

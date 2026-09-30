@@ -567,4 +567,81 @@ public class AdminManager {
             .addOnFailureListener(e -> cb.onError(e.getMessage()));
     }
 
+
+
+    // ═══════════════════════════════════════
+    //  President System
+    // ═══════════════════════════════════════
+    public static class President {
+        public String nationalId;
+        public String name;
+        public long certifiedAt;
+        public String note;
+        public boolean isActive;
+    }
+
+    public interface PresidentsListener { void onList(List<President> list); }
+
+    public ListenerRegistration listenPresidents(final PresidentsListener l) {
+        return db.collection("presidents")
+            .whereEqualTo("isActive", true)
+            .addSnapshotListener((snap, e) -> {
+                if (snap == null) return;
+                List<President> list = new ArrayList<>();
+                for (QueryDocumentSnapshot d : snap) {
+                    President p = new President();
+                    p.nationalId = d.getId();
+                    p.name = d.getString("name");
+                    p.note = d.getString("note");
+                    Long ts = d.getLong("certifiedAt");
+                    p.certifiedAt = ts != null ? ts : 0;
+                    Boolean ac = d.getBoolean("isActive");
+                    p.isActive = ac != null && ac;
+                    list.add(p);
+                }
+                l.onList(list);
+            });
+    }
+
+    public void certifyAsPresident(final String nationalId, final String name,
+                                    final String note, final OnDone cb) {
+        Map<String, Object> data = new HashMap<>();
+        data.put("name", name);
+        data.put("note", note != null ? note : "الرئيس الرسمي للدولة");
+        data.put("certifiedAt", System.currentTimeMillis());
+        data.put("certifiedBy", "admin");
+        data.put("isActive", true);
+
+        db.collection("presidents").document(nationalId).set(data)
+            .addOnSuccessListener(a -> {
+                // نحدثو المواطن
+                db.collection("citizens").document(nationalId)
+                    .update("isPresident", true,
+                            "presidentSince", System.currentTimeMillis())
+                    .addOnSuccessListener(v -> {
+                        logAction("certify_president", name + " (" + nationalId + ")");
+                        cb.onSuccess();
+                    })
+                    .addOnFailureListener(e -> cb.onError(e.getMessage()));
+            })
+            .addOnFailureListener(e -> cb.onError(e.getMessage()));
+    }
+
+    public void revokePresident(final String nationalId, final OnDone cb) {
+        db.collection("presidents").document(nationalId)
+            .update("isActive", false,
+                    "revokedAt", System.currentTimeMillis())
+            .addOnSuccessListener(a -> {
+                db.collection("citizens").document(nationalId)
+                    .update("isPresident", false,
+                            "presidentSince", 0)
+                    .addOnSuccessListener(v -> {
+                        logAction("revoke_president", nationalId);
+                        cb.onSuccess();
+                    })
+                    .addOnFailureListener(e -> cb.onError(e.getMessage()));
+            })
+            .addOnFailureListener(e -> cb.onError(e.getMessage()));
+    }
+
 }
