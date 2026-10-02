@@ -27,10 +27,41 @@ jobs:
       - name: Make gradlew executable
         run: chmod +x ./gradlew
 
-      - name: Build Debug APK
-        run: ./gradlew assembleDebug --no-daemon --stacktrace
+      # ═══ إنشاء Keystore من Secret ═══
+      - name: Decode Keystore
+        run: |
+          echo "${{ secrets.KEYSTORE_BASE64 }}" | base64 -d > ${{ github.workspace }}/ummah-release.keystore
+          ls -la ${{ github.workspace }}/ummah-release.keystore
 
-      - name: Upload APK
+      # ═══ إنشاء local.properties من Secrets ═══
+      - name: Create local.properties
+        run: |
+          cat > local.properties << EOF
+          KEYSTORE_FILE=ummah-release.keystore
+          KEYSTORE_PASSWORD=${{ secrets.KEYSTORE_PASSWORD }}
+          KEY_ALIAS=${{ secrets.KEY_ALIAS }}
+          KEY_PASSWORD=${{ secrets.KEY_PASSWORD }}
+          ADMIN_PASSWORD=${{ secrets.ADMIN_PASSWORD }}
+          EOF
+
+      # ═══ بناء Release APK ═══
+      - name: Build Release APK
+        run: ./gradlew assembleRelease --no-daemon --stacktrace
+
+      # ═══ بناء Debug APK (للاختبار) ═══
+      - name: Build Debug APK
+        run: ./gradlew assembleDebug --no-daemon
+
+      # ═══ رفع Release APK ═══
+      - name: Upload Release APK
+        uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: UmmahAdmin-release-apk
+          path: app/build/outputs/apk/release/app-release.apk
+
+      # ═══ رفع Debug APK ═══
+      - name: Upload Debug APK
         uses: actions/upload-artifact@v4
         if: always()
         with:
