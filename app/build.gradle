@@ -1,13 +1,29 @@
+// ═══ قراءة local.properties ═══
+def localProps = new Properties()
+def localFile = rootProject.file('local.properties')
+if (localFile.exists()) {
+    localProps.load(new FileInputStream(localFile))
+}
+def getLocalProp = { String key, String defaultVal = "" ->
+    return localProps.getProperty(key) ?: defaultVal
+}
+
+
 plugins {
     id 'com.android.application'
     id 'com.google.gms.google-services'
 }
 
 android {
+    buildFeatures {
+        buildConfig true
+    }
+
     namespace 'com.ummah.admin'
     compileSdk 35
 
     defaultConfig {
+        buildConfigField "String", "ADMIN_PASSWORD", "\"${getLocalProp('ADMIN_PASSWORD', 'ummah2026')}\""
         applicationId "com.ummah.admin"
         minSdk 21
         targetSdk 35
@@ -18,9 +34,9 @@ android {
     signingConfigs {
         release {
             storeFile file("../ummah-release.keystore")
-            storePassword "ummah2026"
+            storePassword getLocalProp("KEYSTORE_PASSWORD", System.getenv("KEYSTORE_PASSWORD") ?: "")
             keyAlias "ummah"
-            keyPassword "ummah2026"
+            keyPassword getLocalProp("KEY_PASSWORD", System.getenv("KEY_PASSWORD") ?: "")
         }
     }
 

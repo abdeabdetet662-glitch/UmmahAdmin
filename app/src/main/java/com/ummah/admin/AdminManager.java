@@ -19,7 +19,10 @@ public class AdminManager {
     private final FirebaseFirestore db;
     private final FirebaseAuth auth;
 
-    public static final String ADMIN_PASSWORD = "ummah2026";
+    // ⚠️ كلمة السر القديمة حُذفت للأمان
+    // الأدمن يستعمل Firebase Auth الآن
+    @Deprecated
+    public static final String ADMIN_PASSWORD = "";
 
     private AdminManager() {
         db = FirebaseFirestore.getInstance();

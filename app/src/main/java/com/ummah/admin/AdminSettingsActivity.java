@@ -69,7 +69,7 @@ public class AdminSettingsActivity extends Activity {
 
         addInfo(card2, "إصدار لوحة التحكم", "v2.0");
         addInfo(card2, "Firebase Project", "ummah-15bad");
-        addInfo(card2, "Admin Password", AdminManager.ADMIN_PASSWORD);
+        addInfo(card2, "Admin Auth", "Firebase Auth (Email/Password)");
 
         root.addView(card2);
 

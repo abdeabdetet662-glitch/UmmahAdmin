@@ -87,7 +87,7 @@ public class AdminLoginActivity extends Activity {
         login.setLayoutParams(lp);
         login.setOnClickListener(v -> {
             String pass = input.getText().toString().trim();
-            if (pass.equals(AdminManager.ADMIN_PASSWORD)) {
+            if (isValidAdminLogin(pass)) {
                 getSharedPreferences("admin", MODE_PRIVATE)
                     .edit().putBoolean("logged_in", true).apply();
                 startActivity(new Intent(this, AdminMainActivity.class));
@@ -107,5 +107,15 @@ public class AdminLoginActivity extends Activity {
         root.addView(warn);
 
         setContentView(root);
+    }
+
+    // ⚠️ التحقق من كلمة السر — من BuildConfig
+    private boolean isValidAdminLogin(String pass) {
+        try {
+            return pass != null && pass.length() >= 8 &&
+                   pass.equals(com.ummah.admin.BuildConfig.ADMIN_PASSWORD);
+        } catch (Exception e) {
+            return false;
+        }
     }
 }
