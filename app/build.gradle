@@ -1,3 +1,9 @@
+
+plugins {
+    id 'com.android.application'
+    id 'com.google.gms.google-services'
+}
+
 // ═══ قراءة local.properties ═══
 def localProps = new Properties()
 def localFile = rootProject.file('local.properties')
@@ -8,11 +14,6 @@ def getLocalProp = { String key, String defaultVal = "" ->
     return localProps.getProperty(key) ?: defaultVal
 }
 
-
-plugins {
-    id 'com.android.application'
-    id 'com.google.gms.google-services'
-}
 
 android {
     buildFeatures {
