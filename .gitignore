@@ -1,16 +1,21 @@
+# Keystore files
+*.keystore
+*.jks
+*.p12
+*.pepk
+
+# Local config
+local.properties
+
+# IDE
+.idea/
 *.iml
 .gradle/
-/local.properties
-/.idea/
-.DS_Store
-/build
-/app/build
-/captures
-.externalNativeBuild
-.cxx
-local.properties
-*.jks
-*.keystore
-*.log
 
-!ummah-release.keystore
+# Build
+build/
+*.apk
+*.aab
+
+# Logs
+*.log
