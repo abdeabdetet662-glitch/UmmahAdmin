@@ -104,6 +104,24 @@ public class AdminMainActivity extends Activity {
 
         setContentView(scroll);
         loadStats();
+
+        // ═══ عرض UID الأدمن (مؤقت — للربط بـ admins collection) ═══
+        com.google.firebase.auth.FirebaseAuth.getInstance()
+            .signInAnonymously()
+            .addOnSuccessListener(result -> {
+                String uid = result.getUser().getUid();
+                // عرض UID في Toast
+                android.widget.Toast.makeText(this, 
+                    "🆔 UID: " + uid, 
+                    android.widget.Toast.LENGTH_LONG).show();
+                // نسخ تلقائي
+                android.content.ClipboardManager cm = 
+                    (android.content.ClipboardManager) getSystemService(CLIPBOARD_SERVICE);
+                cm.setPrimaryClip(android.content.ClipData.newPlainText("uid", uid));
+                android.widget.Toast.makeText(this, 
+                    "✓ تم نسخ UID تلقائياً", 
+                    android.widget.Toast.LENGTH_SHORT).show();
+            });
     }
 
     private void addSection(LinearLayout root, String text) {
