@@ -19,3 +19,8 @@ build/
 
 # Logs
 *.log
+
+# Temporary files (never commit)
+keystore-*.b64
+keystore-view.html
+*.b64
