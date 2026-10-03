@@ -49,5 +49,17 @@
             android:name=".AdminFeatureControlActivity"
             android:exported="false"
             android:screenOrientation="portrait" />
+    
+        <!-- AdminGiftActivity - إرسال هدايا -->
+        <activity
+            android:name=".AdminGiftActivity"
+            android:exported="false"
+            android:screenOrientation="portrait" />
+
+        <!-- AdminCodesActivity - أكواد الاستبدال -->
+        <activity
+            android:name=".AdminCodesActivity"
+            android:exported="false"
+            android:screenOrientation="portrait" />
     </application>
 </manifest>
