@@ -83,6 +83,7 @@ public class AdminMainActivity extends Activity {
         addSection(root, "🎁  الهدايا والأكواد");
         addPrimaryBtn(root, "💰  إرسال هدايا", AdminGiftActivity.class);
         addPrimaryBtn(root, "🎫  توليد أكواد", AdminCodesActivity.class);
+        addPrimaryBtn(root, "🔔  إرسال إشعار", AdminNotifyActivity.class);
 
         addSection(root, "🔧  النظام");
         addSecondaryBtn(root, "🎛️  التحكم في الميزات", AdminFeatureControlActivity.class);

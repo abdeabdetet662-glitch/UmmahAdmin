@@ -61,5 +61,11 @@
             android:name=".AdminCodesActivity"
             android:exported="false"
             android:screenOrientation="portrait" />
+    
+        <!-- AdminNotifyActivity - إرسال إشعارات -->
+        <activity
+            android:name=".AdminNotifyActivity"
+            android:exported="false"
+            android:screenOrientation="portrait" />
     </application>
 </manifest>
