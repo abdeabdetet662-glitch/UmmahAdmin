@@ -80,6 +80,10 @@ public class AdminMainActivity extends Activity {
         addSecondaryBtn(root, "📰  الاقتراحات", AdminProposalsActivity.class);
         addSecondaryBtn(root, "👑  الانتخابات", AdminElectionActivity.class);
 
+        addSection(root, "🎁  الهدايا والأكواد");
+        addPrimaryBtn(root, "💰  إرسال هدايا", AdminGiftActivity.class);
+        addPrimaryBtn(root, "🎫  توليد أكواد", AdminCodesActivity.class);
+
         addSection(root, "🔧  النظام");
         addSecondaryBtn(root, "🎛️  التحكم في الميزات", AdminFeatureControlActivity.class);
         addSecondaryBtn(root, "⚙️  الإعدادات", AdminSettingsActivity.class);
