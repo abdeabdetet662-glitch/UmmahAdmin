@@ -146,16 +146,10 @@ public class AdminMainActivity extends Activity {
 
         // ═══ عرض UID الأدمن (مؤقت — للربط بـ admins collection) ═══
         com.google.firebase.auth.FirebaseAuth.getInstance()
-            .signInAnonymously()
-            .addOnSuccessListener(result -> {
-                // ✅ تم تسجيل الدخول
-                // نسخ تلقائي
-                android.content.ClipboardManager cm = 
-                    (android.content.ClipboardManager) getSystemService(CLIPBOARD_SERVICE);
-                cm.setPrimaryClip(android.content.ClipData.newPlainText("uid", uid));
-                android.widget.Toast.makeText(this, 
-                    android.widget.Toast.LENGTH_SHORT).show();
-            });
+                .signInAnonymously()
+                .addOnSuccessListener(result -> {
+                    // ✅ تم تسجيل الدخول
+                });
     }
 
     private void addSection(LinearLayout root, String text) {
