@@ -331,23 +331,52 @@ public class AdminNotifyActivity extends Activity {
     }
 
     private void sendToAll(String title, String message, String type,
-                           String action, String emoji) {
-        Map<String, Object> data = new HashMap<>();
-        data.put("title", title);
-        data.put("message", message);
-        data.put("type", type);
-        data.put("action", action);
-        data.put("emoji", emoji);
-        data.put("target", "ALL");
-        data.put("timestamp", System.currentTimeMillis());
-        data.put("from", "admin");
-
-        db.collection(COLLECTION).add(data)
-            .addOnSuccessListener(doc -> {
-                toast("✅ تم إرسال الإشعار للكل!");
-                clearForm();
-            })
-            .addOnFailureListener(e -> toast("❌ " + e.getMessage()));
+                            String action, String emoji) {
+        
+        // نجيبو كل المواطنين
+        db.collection("citizens").get()
+                .addOnSuccessListener(snapshot -> {
+                    int total = snapshot.size();
+                    if (total == 0) {
+                        toast("⚠️ ما فيهش مواطنين");
+                        return;
+                    }
+                    
+                    toast("📤 جاري إرسال " + total + " إشعار...");
+                    
+                    final int[] success = {0};
+                    final int[] failed = {0};
+                    long now = System.currentTimeMillis();
+                    
+                    for (com.google.firebase.firestore.DocumentSnapshot doc : snapshot.getDocuments()) {
+                        String nationalId = doc.getString("nationalId");
+                        if (nationalId == null || nationalId.isEmpty()) {
+                            failed[0]++;
+                            continue;
+                        }
+                        
+                        java.util.Map<String, Object> data = new java.util.HashMap<>();
+                        data.put("title", title);
+                        data.put("message", message);
+                        data.put("type", type);
+                        data.put("action", action);
+                        data.put("emoji", emoji);
+                        data.put("target", nationalId);
+                        data.put("timestamp", now);
+                        data.put("from", "admin");
+                        
+                        db.collection(COLLECTION).add(data)
+                                .addOnSuccessListener(d -> success[0]++)
+                                .addOnFailureListener(e -> failed[0]++);
+                    }
+                    
+                    // نعرضو النتيجة بعد ثانيتين
+                    new android.os.Handler().postDelayed(() -> {
+                        toast("✅ تم إرسال " + success[0] + " من " + total + " إشعار");
+                        clearForm();
+                    }, 2500);
+                })
+                .addOnFailureListener(e -> toast("❌ " + e.getMessage()));
     }
 
     private void clearForm() {
