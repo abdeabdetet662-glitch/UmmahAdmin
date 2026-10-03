@@ -8,6 +8,7 @@ import android.os.Bundle;
 import android.view.Gravity;
 import android.view.View;
 import android.widget.Button;
+import android.widget.FrameLayout;
 import android.widget.LinearLayout;
 import android.widget.ScrollView;
 import android.widget.TextView;
@@ -16,6 +17,10 @@ public class AdminMainActivity extends Activity {
 
     private AdminManager am;
     private LinearLayout statsContainer;
+    private int unreadComplaints = 0;
+    private int unreadMessages = 0;
+    private int unreadReports = 0;
+    private com.google.firebase.firestore.ListenerRegistration unreadReg;
 
     @Override
     protected void onCreate(Bundle b) {
@@ -63,12 +68,12 @@ public class AdminMainActivity extends Activity {
         addSecondaryBtn(root, "👥  قائمة المواطنين", AdminCitizensActivity.class);
         addSecondaryBtn(root, "🚫  المحظورون", AdminBlockedActivity.class);
         addSecondaryBtn(root, "🔇  المكتومون", AdminMutedActivity.class);
-        addSecondaryBtn(root, "💌  رسائل خاصة", AdminPrivateMessagesActivity.class);
+        addSecondaryBtnBadge(root, "💌  رسائل خاصة", AdminPrivateMessagesActivity.class, unreadMessages);
 
         addSection(root, "💬  المحتوى");
         addSecondaryBtn(root, "💬  إدارة الدردشة", AdminChatActivity.class);
-        addSecondaryBtn(root, "📢  الإبلاغات", AdminReportsActivity.class);
-        addSecondaryBtn(root, "⚖️  الشكاوى", AdminComplaintsActivity.class);
+        addSecondaryBtnBadge(root, "📢  الإبلاغات", AdminReportsActivity.class, unreadReports);
+        addSecondaryBtnBadge(root, "⚖️  الشكاوى", AdminComplaintsActivity.class, unreadComplaints);
         addSecondaryBtn(root, "📰  الأخبار", AdminNewsActivity.class);
 
         addSection(root, "💰  الاقتصاد");
@@ -107,6 +112,32 @@ public class AdminMainActivity extends Activity {
         });
         root.addView(logout);
 
+        
+        // ═══ Badges للإدارة ═══
+        AdminBadgeHelper.createChannels(this);
+        
+        unreadReg = com.google.firebase.firestore.FirebaseFirestore
+                .getInstance()
+                .collection("unread_admin")
+                .document("main")
+                .addSnapshotListener((snap, e) -> {
+                    if (e != null || snap == null || !snap.exists()) return;
+                    
+                    Long complaints = snap.getLong("complaints");
+                    Long messages = snap.getLong("messages");
+                    Long reports = snap.getLong("reports");
+                    
+                    unreadComplaints = complaints != null ? complaints.intValue() : 0;
+                    unreadMessages = messages != null ? messages.intValue() : 0;
+                    unreadReports = reports != null ? reports.intValue() : 0;
+                    
+                    int total = unreadComplaints + unreadMessages + unreadReports;
+                    AdminBadgeHelper.updateAppBadge(this, total);
+                    
+                    // نعيد بناء الواجهة
+                    runOnUiThread(() -> rebuildForBadges());
+                });
+        
         setContentView(scroll);
         loadStats();
 
@@ -168,6 +199,18 @@ public class AdminMainActivity extends Activity {
         btn.setOnClickListener(v -> startActivity(new Intent(this, cls)));
         root.addView(btn);
     }
+    
+    /** نسخة مع Badge */
+    private void addSecondaryBtnBadge(LinearLayout root, String text, final Class<?> cls, int badgeCount) {
+        Button btn = UiHelper.secondaryButton(this, text);
+        btn.setOnClickListener(v -> startActivity(new Intent(this, cls)));
+        
+        if (badgeCount > 0) {
+            root.addView(AdminBadgeHelper.withBadge(this, btn, badgeCount));
+        } else {
+            root.addView(btn);
+        }
+    }
 
     private void loadStats() {
         am.loadStats(new AdminManager.StatsListener() {
@@ -217,5 +260,20 @@ public class AdminMainActivity extends Activity {
         card.addView(v);
 
         parent.addView(card);
+    }
+
+    
+    /** إعادة بناء الشاشة لتحديث Badges */
+    private void rebuildForBadges() {
+        recreate();
+    }
+    
+    @Override
+    protected void onDestroy() {
+        if (unreadReg != null) {
+            unreadReg.remove();
+            unreadReg = null;
+        }
+        super.onDestroy();
     }
 }
