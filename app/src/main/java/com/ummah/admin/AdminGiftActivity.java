@@ -156,18 +156,18 @@ public class AdminGiftActivity extends Activity {
         int[] amounts = {50, 100, 500, 1000};
         for (int amt : amounts) {
             final int val = amt;
-            Button b = new Button(this);
-            b.setText(String.valueOf(amt));
-            b.setTextSize(13);
-            b.setAllCaps(false);
-            b.setTextColor(Color.parseColor("#D4AF37"));
-            b.setBackgroundResource(R.drawable.bg_btn_outline);
+            Button btn = new Button(this);
+            btn.setText(String.valueOf(amt));
+            btn.setTextSize(13);
+            btn.setAllCaps(false);
+            btn.setTextColor(Color.parseColor("#D4AF37"));
+            btn.setBackgroundResource(R.drawable.bg_btn_outline);
             LinearLayout.LayoutParams qLp = new LinearLayout.LayoutParams(
                     0, LinearLayout.LayoutParams.WRAP_CONTENT, 1f);
             qLp.setMargins(4, 0, 4, 0);
-            b.setLayoutParams(qLp);
-            b.setOnClickListener(v -> etAmount.setText(String.valueOf(val)));
-            quickRow.addView(b);
+            btn.setLayoutParams(qLp);
+            btn.setOnClickListener(v -> etAmount.setText(String.valueOf(val)));
+            quickRow.addView(btn);
         }
         amountCard.addView(quickRow);
         root.addView(amountCard);
