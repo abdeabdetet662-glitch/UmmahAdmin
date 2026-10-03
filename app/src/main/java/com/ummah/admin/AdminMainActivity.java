@@ -21,6 +21,9 @@ public class AdminMainActivity extends Activity {
     private int unreadMessages = 0;
     private int unreadReports = 0;
     private com.google.firebase.firestore.ListenerRegistration unreadReg;
+    private android.widget.TextView badgeComplaints;
+    private android.widget.TextView badgeMessages;
+    private android.widget.TextView badgeReports;
 
     @Override
     protected void onCreate(Bundle b) {
@@ -68,12 +71,12 @@ public class AdminMainActivity extends Activity {
         addSecondaryBtn(root, "👥  قائمة المواطنين", AdminCitizensActivity.class);
         addSecondaryBtn(root, "🚫  المحظورون", AdminBlockedActivity.class);
         addSecondaryBtn(root, "🔇  المكتومون", AdminMutedActivity.class);
-        addSecondaryBtnBadge(root, "💌  رسائل خاصة", AdminPrivateMessagesActivity.class, unreadMessages);
+        addSecondaryBtnBadge(root, "💌  رسائل خاصة", AdminPrivateMessagesActivity.class, unreadMessages, 2);
 
         addSection(root, "💬  المحتوى");
         addSecondaryBtn(root, "💬  إدارة الدردشة", AdminChatActivity.class);
-        addSecondaryBtnBadge(root, "📢  الإبلاغات", AdminReportsActivity.class, unreadReports);
-        addSecondaryBtnBadge(root, "⚖️  الشكاوى", AdminComplaintsActivity.class, unreadComplaints);
+        addSecondaryBtnBadge(root, "📢  الإبلاغات", AdminReportsActivity.class, unreadReports, 3);
+        addSecondaryBtnBadge(root, "⚖️  الشكاوى", AdminComplaintsActivity.class, unreadComplaints, 1);
         addSecondaryBtn(root, "📰  الأخبار", AdminNewsActivity.class);
 
         addSection(root, "💰  الاقتصاد");
@@ -135,7 +138,7 @@ public class AdminMainActivity extends Activity {
                     AdminBadgeHelper.updateAppBadge(this, total);
                     
                     // نعيد بناء الواجهة
-                    runOnUiThread(() -> rebuildForBadges());
+                    runOnUiThread(() -> updateBadgesOnly());
                 });
         
         setContentView(scroll);
@@ -145,17 +148,12 @@ public class AdminMainActivity extends Activity {
         com.google.firebase.auth.FirebaseAuth.getInstance()
             .signInAnonymously()
             .addOnSuccessListener(result -> {
-                String uid = result.getUser().getUid();
-                // عرض UID في Toast
-                android.widget.Toast.makeText(this, 
-                    "🆔 UID: " + uid, 
-                    android.widget.Toast.LENGTH_LONG).show();
+                // ✅ تم تسجيل الدخول
                 // نسخ تلقائي
                 android.content.ClipboardManager cm = 
                     (android.content.ClipboardManager) getSystemService(CLIPBOARD_SERVICE);
                 cm.setPrimaryClip(android.content.ClipData.newPlainText("uid", uid));
                 android.widget.Toast.makeText(this, 
-                    "✓ تم نسخ UID تلقائياً", 
                     android.widget.Toast.LENGTH_SHORT).show();
             });
     }
@@ -201,14 +199,62 @@ public class AdminMainActivity extends Activity {
     }
     
     /** نسخة مع Badge */
-    private void addSecondaryBtnBadge(LinearLayout root, String text, final Class<?> cls, int badgeCount) {
+    private void addSecondaryBtnBadge(LinearLayout root, String text, final Class<?> cls, int badgeCount, int tag) {
         Button btn = UiHelper.secondaryButton(this, text);
         btn.setOnClickListener(v -> startActivity(new Intent(this, cls)));
         
-        if (badgeCount > 0) {
-            root.addView(AdminBadgeHelper.withBadge(this, btn, badgeCount));
-        } else {
-            root.addView(btn);
+        FrameLayout wrapper = new FrameLayout(this);
+        wrapper.setClipChildren(false);
+        wrapper.setClipToPadding(false);
+        
+        FrameLayout.LayoutParams vLp = new FrameLayout.LayoutParams(
+                FrameLayout.LayoutParams.MATCH_PARENT,
+                FrameLayout.LayoutParams.WRAP_CONTENT);
+        btn.setLayoutParams(vLp);
+        wrapper.addView(btn);
+        
+        // نضيفو Badge دائماً (حتى لو = 0) باش نحدّثوه بعدين
+        android.widget.TextView badge = AdminBadgeHelper.createBadge(this, badgeCount);
+        FrameLayout.LayoutParams blp = new FrameLayout.LayoutParams(
+                FrameLayout.LayoutParams.WRAP_CONTENT,
+                FrameLayout.LayoutParams.WRAP_CONTENT);
+        blp.gravity = android.view.Gravity.TOP | android.view.Gravity.END;
+        blp.setMargins(0, dp(8), dp(20), 0);
+        badge.setLayoutParams(blp);
+        badge.setVisibility(badgeCount > 0 ? android.view.View.VISIBLE : android.view.View.GONE);
+        wrapper.addView(badge);
+        
+        // نحفظو الـ reference حسب tag
+        switch (tag) {
+            case 1: badgeComplaints = badge; break;
+            case 2: badgeMessages = badge; break;
+            case 3: badgeReports = badge; break;
+        }
+        
+        LinearLayout.LayoutParams wrapperLp = new LinearLayout.LayoutParams(
+                LinearLayout.LayoutParams.MATCH_PARENT,
+                LinearLayout.LayoutParams.WRAP_CONTENT);
+        wrapper.setLayoutParams(wrapperLp);
+        root.addView(wrapper);
+    }
+    
+    private int dp(int val) {
+        return (int) (val * getResources().getDisplayMetrics().density);
+    }
+    
+    /** تحديث Badges بدون recreate */
+    private void updateBadgesOnly() {
+        if (badgeComplaints != null) {
+            badgeComplaints.setText(unreadComplaints > 99 ? "99+" : String.valueOf(unreadComplaints));
+            badgeComplaints.setVisibility(unreadComplaints > 0 ? android.view.View.VISIBLE : android.view.View.GONE);
+        }
+        if (badgeMessages != null) {
+            badgeMessages.setText(unreadMessages > 99 ? "99+" : String.valueOf(unreadMessages));
+            badgeMessages.setVisibility(unreadMessages > 0 ? android.view.View.VISIBLE : android.view.View.GONE);
+        }
+        if (badgeReports != null) {
+            badgeReports.setText(unreadReports > 99 ? "99+" : String.valueOf(unreadReports));
+            badgeReports.setVisibility(unreadReports > 0 ? android.view.View.VISIBLE : android.view.View.GONE);
         }
     }
 
@@ -262,12 +308,7 @@ public class AdminMainActivity extends Activity {
         parent.addView(card);
     }
 
-    
-    /** إعادة بناء الشاشة لتحديث Badges */
-    private void rebuildForBadges() {
-        recreate();
-    }
-    
+        
     @Override
     protected void onDestroy() {
         if (unreadReg != null) {
