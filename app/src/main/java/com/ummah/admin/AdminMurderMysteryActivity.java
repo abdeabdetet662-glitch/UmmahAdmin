@@ -37,11 +37,6 @@ public class AdminMurderMysteryActivity extends Activity {
     private static final String COLLECTION = "murder_mysteries";
 
     @Override
-    protected void attachBaseContext(android.content.Context base) {
-        super.attachBaseContext(LocaleHelper.wrap(base));
-    }
-
-    @Override
     protected void onCreate(Bundle b) {
         super.onCreate(b);
         db = FirebaseFirestore.getInstance();
@@ -92,7 +87,7 @@ public class AdminMurderMysteryActivity extends Activity {
         newBtn.setTextColor(Color.parseColor("#0A0510"));
         newBtn.setAllCaps(false);
         newBtn.setTypeface(null, Typeface.BOLD);
-        newBtn.setBackgroundResource(R.drawable.bg_btn_gold);
+        newBtn.setBackgroundResource(R.drawable.bg_btn_gold_hero);
         LinearLayout.LayoutParams nbLp = new LinearLayout.LayoutParams(
                 LinearLayout.LayoutParams.MATCH_PARENT,
                 LinearLayout.LayoutParams.WRAP_CONTENT);
@@ -157,7 +152,7 @@ public class AdminMurderMysteryActivity extends Activity {
 
         LinearLayout card = new LinearLayout(this);
         card.setOrientation(LinearLayout.VERTICAL);
-        card.setBackgroundResource(R.drawable.bg_card);
+        card.setBackgroundResource(R.drawable.bg_card_premium);
         card.setPadding(dp(20), dp(16), dp(20), dp(16));
         LinearLayout.LayoutParams lp = new LinearLayout.LayoutParams(
                 LinearLayout.LayoutParams.MATCH_PARENT,
@@ -257,7 +252,7 @@ public class AdminMurderMysteryActivity extends Activity {
         btn.setTypeface(null, Typeface.BOLD);
         btn.setGravity(Gravity.CENTER);
         btn.setPadding(dp(12), dp(8), dp(12), dp(8));
-        btn.setBackgroundResource(R.drawable.bg_card);
+        btn.setBackgroundResource(R.drawable.bg_card_gold);
         LinearLayout.LayoutParams lp = new LinearLayout.LayoutParams(
                 LinearLayout.LayoutParams.WRAP_CONTENT,
                 LinearLayout.LayoutParams.WRAP_CONTENT);
@@ -312,7 +307,7 @@ public class AdminMurderMysteryActivity extends Activity {
         et.setHint(hint);
         et.setHintTextColor(Color.parseColor("#666666"));
         et.setTextColor(Color.WHITE);
-        et.setBackgroundResource(R.drawable.bg_card);
+        et.setBackgroundResource(R.drawable.bg_input);
         et.setPadding(dp(12), dp(10), dp(12), dp(10));
         LinearLayout.LayoutParams lp = new LinearLayout.LayoutParams(
                 LinearLayout.LayoutParams.MATCH_PARENT,
