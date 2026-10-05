@@ -56,6 +56,13 @@ android {
         targetCompatibility JavaVersion.VERSION_17
     }
 
+    // ═══ Lint: تجاهل duplicate classes من google-auth ═══
+    lint {
+        abortOnError false
+        checkReleaseBuilds false
+        disable 'DuplicatePlatformClasses', 'InvalidPackage'
+    }
+
     packagingOptions {
         resources {
             excludes += ['META-INF/DEPENDENCIES', 'META-INF/LICENSE', 'META-INF/LICENSE.txt',
@@ -69,14 +76,6 @@ configurations.all {
         force 'org.jetbrains.kotlin:kotlin-stdlib:1.9.10'
         force 'org.jetbrains.kotlin:kotlin-stdlib-jdk7:1.9.10'
         force 'org.jetbrains.kotlin:kotlin-stdlib-jdk8:1.9.10'
-    }
-
-    
-    // ═══ Lint: تجاهل duplicate classes من google-auth ═══
-    lint {
-        abortOnError false
-        checkReleaseBuilds false
-        disable 'DuplicatePlatformClasses', 'InvalidPackage'
     }
 
 }
