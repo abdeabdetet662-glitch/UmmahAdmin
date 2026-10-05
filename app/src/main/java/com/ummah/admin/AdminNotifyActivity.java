@@ -440,8 +440,7 @@ public class AdminNotifyActivity extends Activity {
 
                     // ═══ النتيجة ═══
                     new android.os.Handler().postDelayed(() -> {
-                        toast("✅ Firestore: " + success[0] + "/" + total + "
-📱 FCM: " + fcmSent[0]);
+                        toast("✅ Firestore: " + success[0] + "/" + total + " | 📱 FCM: " + fcmSent[0]);
                         clearForm();
                     }, 4000);
                 })
