@@ -310,8 +310,8 @@ public class AdminNotifyActivity extends Activity {
         }
     }
 
-    private void sendToUser(String nationalId, String title, String message,
-                            String type, String action, String emoji) {
+    private void sendToUser(final String nationalId, final String title, final String message,
+                            final String type, final String action, final String emoji) {
         Map<String, Object> data = new HashMap<>();
         data.put("title", title);
         data.put("message", message);
@@ -324,10 +324,45 @@ public class AdminNotifyActivity extends Activity {
 
         db.collection(COLLECTION).add(data)
             .addOnSuccessListener(doc -> {
-                toast("✅ تم إرسال الإشعار لـ " + nationalId);
+                toast("✅ Firestore: تم");
+                sendFcmToUser(nationalId, title, message, type, emoji);
                 clearForm();
             })
             .addOnFailureListener(e -> toast("❌ " + e.getMessage()));
+    }
+
+    /** ═══ إرسال FCM Push للمستخدم ═══ */
+    private void sendFcmToUser(String nationalId, String title, String message,
+                                String type, String emoji) {
+        db.collection("fcm_tokens").document(nationalId).get()
+            .addOnSuccessListener(doc -> {
+                if (!doc.exists()) {
+                    toast("⚠️ ما فيه FCM token — الإشعار في التطبيق فقط");
+                    return;
+                }
+                String fcmToken = doc.getString("token");
+                if (fcmToken == null || fcmToken.isEmpty()) {
+                    toast("⚠️ Token فارغ");
+                    return;
+                }
+
+                java.util.Map<String, String> data = new java.util.HashMap<>();
+                data.put("type", type != null ? type : "admin");
+                data.put("emoji", emoji != null ? emoji : "🔔");
+
+                String fullTitle = (emoji != null ? emoji + " " : "🔔 ") + title;
+
+                FcmSender.sendToToken(this, fcmToken, fullTitle, message, data,
+                    new FcmSender.Callback() {
+                        @Override public void onSuccess() {
+                            runOnUiThread(() -> toast("✅ FCM: تم الإرسال"));
+                        }
+                        @Override public void onError(String error) {
+                            runOnUiThread(() -> toast("⚠️ FCM: " + error));
+                        }
+                    });
+            })
+            .addOnFailureListener(e -> toast("⚠️ ما لقيناش FCM token"));
     }
 
     private void sendToAll(String title, String message, String type,
@@ -344,17 +379,19 @@ public class AdminNotifyActivity extends Activity {
                     
                     toast("📤 جاري إرسال " + total + " إشعار...");
                     
-                    final int[] success = {0};
+                                        final int[] success = {0};
                     final int[] failed = {0};
+                    final int[] fcmSent = {0};
                     long now = System.currentTimeMillis();
-                    
+
                     for (com.google.firebase.firestore.DocumentSnapshot doc : snapshot.getDocuments()) {
                         String nationalId = doc.getString("nationalId");
                         if (nationalId == null || nationalId.isEmpty()) {
                             failed[0]++;
                             continue;
                         }
-                        
+
+                        // ═══ 1. Firestore notification ═══
                         java.util.Map<String, Object> data = new java.util.HashMap<>();
                         data.put("title", title);
                         data.put("message", message);
@@ -364,17 +401,49 @@ public class AdminNotifyActivity extends Activity {
                         data.put("target", nationalId);
                         data.put("timestamp", now);
                         data.put("from", "admin");
-                        
+
                         db.collection(COLLECTION).add(data)
                                 .addOnSuccessListener(d -> success[0]++)
                                 .addOnFailureListener(e -> failed[0]++);
+
+                        // ═══ 2. FCM Push ═══
+                        final String nid = nationalId;
+                        final String fTitle = title;
+                        final String fMessage = message;
+                        final String fType = type;
+                        final String fEmoji = emoji;
+
+                        db.collection("fcm_tokens").document(nid).get()
+                                .addOnSuccessListener(tokenDoc -> {
+                                    if (tokenDoc.exists()) {
+                                        String token = tokenDoc.getString("token");
+                                        if (token != null && !token.isEmpty()) {
+                                            java.util.Map<String, String> extras = new java.util.HashMap<>();
+                                            extras.put("type", fType != null ? fType : "admin");
+                                            extras.put("emoji", fEmoji != null ? fEmoji : "🔔");
+
+                                            String fullTitle = (fEmoji != null ? fEmoji + " " : "🔔 ") + fTitle;
+
+                                            FcmSender.sendToToken(
+                                                AdminNotifyActivity.this,
+                                                token, fullTitle, fMessage, extras,
+                                                new FcmSender.Callback() {
+                                                    @Override public void onSuccess() {
+                                                        fcmSent[0]++;
+                                                    }
+                                                    @Override public void onError(String e) {}
+                                                });
+                                        }
+                                    }
+                                });
                     }
-                    
-                    // نعرضو النتيجة بعد ثانيتين
+
+                    // ═══ النتيجة ═══
                     new android.os.Handler().postDelayed(() -> {
-                        toast("✅ تم إرسال " + success[0] + " من " + total + " إشعار");
+                        toast("✅ Firestore: " + success[0] + "/" + total + "
+📱 FCM: " + fcmSent[0]);
                         clearForm();
-                    }, 2500);
+                    }, 4000);
                 })
                 .addOnFailureListener(e -> toast("❌ " + e.getMessage()));
     }

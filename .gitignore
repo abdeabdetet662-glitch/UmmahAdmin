@@ -24,3 +24,7 @@ build/
 keystore-*.b64
 keystore-view.html
 *.b64
+
+# FCM Service Account (سري)
+app/src/main/assets/service-account.json
+service-account.json

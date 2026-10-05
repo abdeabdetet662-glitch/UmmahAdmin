@@ -33,6 +33,14 @@ jobs:
           echo "${{ secrets.KEYSTORE_BASE64 }}" | base64 -d > ${{ github.workspace }}/ummah-release.keystore
           ls -la ${{ github.workspace }}/ummah-release.keystore
 
+      # ═══ إنشاء Service Account من Secret ═══
+      - name: Create service-account.json
+        run: |
+          mkdir -p app/src/main/assets
+          echo "${{ secrets.SERVICE_ACCOUNT_BASE64 }}" | base64 -d > app/src/main/assets/service-account.json
+          ls -la app/src/main/assets/service-account.json
+          echo "✅ Service Account created"
+
       # ═══ إنشاء local.properties من Secrets ═══
       - name: Create local.properties
         run: |

@@ -73,6 +73,11 @@ configurations.all {
 }
 
 dependencies {
+
+    // ═══ FCM HTTP v1 API ═══
+    implementation 'com.google.auth:google-auth-library-oauth2-http:1.19.0'
+    implementation 'com.squareup.okhttp3:okhttp:4.12.0'
+
     implementation 'androidx.core:core:1.12.0'
     implementation platform('com.google.firebase:firebase-bom:32.7.0')
     implementation 'com.google.firebase:firebase-auth'
