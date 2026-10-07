@@ -78,6 +78,7 @@ public class AdminMainActivity extends Activity {
         addSecondaryBtnBadge(root, "📢  الإبلاغات", AdminReportsActivity.class, unreadReports, 3);
         addSecondaryBtnBadge(root, "⚖️  الشكاوى", AdminComplaintsActivity.class, unreadComplaints, 1);
         addSecondaryBtn(root, "📰  الأخبار", AdminNewsActivity.class);
+        addSecondaryBtn(root, "🏛️  ديوان أُمّة", AdminSupportActivity.class);
 
         addSection(root, "💰  الاقتصاد");
         addSecondaryBtn(root, "🏦  الخزينة العامة", AdminTreasuryActivity.class);
