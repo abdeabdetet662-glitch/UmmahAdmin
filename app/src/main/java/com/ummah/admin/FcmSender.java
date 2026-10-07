@@ -128,4 +128,80 @@ public class FcmSender {
         void onSuccess();
         void onError(String error);
     }
+
+    
+    /**
+     * ═══ إرسال لـ Topic (كل المشتركين) ═══
+     * يستعمل topic بدل token — يوصل لجميع الأجهزة
+     */
+    public static void sendToTopic(Context ctx, String topic,
+                                    String title, String body,
+                                    Map<String, String> data,
+                                    Callback cb) {
+        new Thread(() -> {
+            try {
+                String accessToken = getAccessToken(ctx);
+
+                JSONObject notification = new JSONObject();
+                notification.put("title", title);
+                notification.put("body", body);
+
+                JSONObject androidNotif = new JSONObject();
+                androidNotif.put("channel_id", "ummah_default");
+                androidNotif.put("sound", "default");
+
+                JSONObject android = new JSONObject();
+                android.put("priority", "HIGH");
+                android.put("notification", androidNotif);
+
+                JSONObject msg = new JSONObject();
+                msg.put("topic", topic);
+                msg.put("notification", notification);
+                msg.put("android", android);
+
+                if (data != null && !data.isEmpty()) {
+                    JSONObject dataObj = new JSONObject();
+                    for (Map.Entry<String, String> e : data.entrySet()) {
+                        dataObj.put(e.getKey(), e.getValue());
+                    }
+                    msg.put("data", dataObj);
+                }
+
+                JSONObject root = new JSONObject();
+                root.put("message", msg);
+
+                OkHttpClient client = new OkHttpClient.Builder()
+                        .connectTimeout(15, TimeUnit.SECONDS)
+                        .writeTimeout(15, TimeUnit.SECONDS)
+                        .readTimeout(15, TimeUnit.SECONDS)
+                        .build();
+
+                RequestBody reqBody = RequestBody.create(
+                        root.toString(),
+                        MediaType.parse("application/json; charset=utf-8"));
+
+                Request request = new Request.Builder()
+                        .url(FCM_URL)
+                        .addHeader("Authorization", "Bearer " + accessToken)
+                        .addHeader("Content-Type", "application/json")
+                        .post(reqBody)
+                        .build();
+
+                Response response = client.newCall(request).execute();
+                String resp = response.body() != null ? response.body().string() : "";
+
+                Log.d(TAG, "📢 Topic [" + topic + "]: " + response.code() + " | " + resp);
+
+                if (response.isSuccessful()) {
+                    if (cb != null) cb.onSuccess();
+                } else {
+                    if (cb != null) cb.onError("HTTP " + response.code() + ": " + resp);
+                }
+
+            } catch (Exception e) {
+                Log.e(TAG, "❌ Topic send failed", e);
+                if (cb != null) cb.onError(e.getMessage());
+            }
+        }).start();
+    }
 }
