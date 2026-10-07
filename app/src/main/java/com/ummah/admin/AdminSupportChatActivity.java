@@ -127,7 +127,7 @@ public class AdminSupportChatActivity extends Activity {
         send.setTextColor(Color.parseColor("#0a0510"));
         send.setTextSize(22);
         send.setGravity(Gravity.CENTER);
-        send.setBackgroundResource(R.drawable.bg_btn_gold);
+        send.setBackgroundResource(R.drawable.bg_card);
         send.setPadding(dp(16), dp(8), dp(16), dp(8));
         send.setOnClickListener(v -> sendMessage());
         inputBar.addView(send);
