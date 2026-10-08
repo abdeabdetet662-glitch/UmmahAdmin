@@ -156,7 +156,12 @@ public class AdminSupportChatActivity extends Activity {
             .collection("messages")
             .orderBy("createdAt", Query.Direction.ASCENDING)
             .addSnapshotListener((snap, e) -> {
-                if (e != null || snap == null) return;
+                if (e != null) {
+                    Toast.makeText(this, "ADM_LISTEN_ERR: " + e.getMessage(),
+                        Toast.LENGTH_LONG).show();
+                    return;
+                }
+                if (snap == null) return;
                 runOnUiThread(() -> {
                     chatContainer.removeAllViews();
                     SimpleDateFormat sdf = new SimpleDateFormat("HH:mm", Locale.US);
@@ -180,10 +185,13 @@ public class AdminSupportChatActivity extends Activity {
 
                         TextView name = new TextView(this);
                         if (isAdmin) {
-                            name.setText("🏛️ أنت (الديوان)");
+                            name.setText("\ud83c\udfdb\ufe0f \u0623\u0646\u062a (\u0627\u0644\u062f\u064a\u0648\u0627\u0646)");
                             name.setTextColor(Color.parseColor("#D4AF37"));
+                        } else if ("bot".equals(senderType)) {
+                            name.setText("\ud83e\udd16 \u0627\u0644\u0645\u0633\u0627\u0639\u062f");
+                            name.setTextColor(Color.parseColor("#9333EA"));
                         } else {
-                            name.setText("👤 " + (senderName != null ? senderName : "مواطن"));
+                            name.setText("\ud83d\udc64 " + (senderName != null ? senderName : "\u0645\u0648\u0627\u0637\u0646"));
                             name.setTextColor(Color.parseColor("#3B82F6"));
                         }
                         name.setTextSize(10);
@@ -220,8 +228,12 @@ public class AdminSupportChatActivity extends Activity {
 
                         chatContainer.addView(row);
                     }
-
                     scroll.post(() -> scroll.fullScroll(View.FOCUS_DOWN));
+
+                    Toast.makeText(this,
+                        "TICKET: " + (ticketId != null ? ticketId.substring(0, Math.min(8, ticketId.length())) : "null")
+                        + " | MSGS: " + snap.size(),
+                        Toast.LENGTH_LONG).show();
                 });
             });
     }
