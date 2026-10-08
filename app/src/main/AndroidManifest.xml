@@ -69,5 +69,6 @@
             android:screenOrientation="portrait" />
     
         
+    <activity android:name=".AdminWheelActivity" android:exported="false" android:screenOrientation="portrait" />
     </application>
 </manifest>
