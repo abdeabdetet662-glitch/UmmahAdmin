@@ -108,27 +108,32 @@ public class AdminSupportChatActivity extends Activity {
         LinearLayout inputBar = new LinearLayout(this);
         inputBar.setOrientation(LinearLayout.HORIZONTAL);
         inputBar.setGravity(Gravity.CENTER_VERTICAL);
-        inputBar.setBackgroundColor(Color.parseColor("#0a0510"));
-        inputBar.setPadding(dp(12), dp(10), dp(12), dp(10));
+        inputBar.setBackgroundColor(Color.parseColor("#1a0a20"));
+        inputBar.setPadding(dp(12), dp(14), dp(12), dp(14));
 
         input = new EditText(this);
-        input.setHint("اكتب رد...");
-        input.setHintTextColor(Color.parseColor("#666666"));
+        input.setHint("\u270d\ufe0f \u0627\u0643\u062a\u0628 \u0631\u062f\u0651\u0643 \u0647\u0646\u0627...");
+        input.setHintTextColor(Color.parseColor("#888888"));
         input.setTextColor(Color.WHITE);
-        input.setTextSize(14);
-        input.setBackgroundResource(R.drawable.bg_input);
-        input.setPadding(dp(14), dp(12), dp(14), dp(12));
+        input.setTextSize(15);
+        input.setBackgroundColor(Color.parseColor("#2a1535"));
+        input.setPadding(dp(16), dp(14), dp(16), dp(14));
         input.setLayoutParams(new LinearLayout.LayoutParams(0,
                 LinearLayout.LayoutParams.WRAP_CONTENT, 1f));
         inputBar.addView(input);
 
         TextView send = new TextView(this);
-        send.setText("➤");
+        send.setText("\u27a4");
         send.setTextColor(Color.parseColor("#0a0510"));
-        send.setTextSize(22);
+        send.setTextSize(24);
         send.setGravity(Gravity.CENTER);
-        send.setBackgroundResource(R.drawable.bg_card);
-        send.setPadding(dp(16), dp(8), dp(16), dp(8));
+        send.setBackgroundResource(R.drawable.bg_btn_gold);
+        send.setPadding(dp(20), dp(10), dp(20), dp(10));
+        LinearLayout.LayoutParams slp = new LinearLayout.LayoutParams(
+                LinearLayout.LayoutParams.WRAP_CONTENT,
+                LinearLayout.LayoutParams.WRAP_CONTENT);
+        slp.leftMargin = dp(8);
+        send.setLayoutParams(slp);
         send.setOnClickListener(v -> sendMessage());
         inputBar.addView(send);
 
@@ -226,11 +231,16 @@ public class AdminSupportChatActivity extends Activity {
         if (text.isEmpty()) return;
         input.setText("");
 
+        com.google.firebase.auth.FirebaseUser u =
+            com.google.firebase.auth.FirebaseAuth.getInstance().getCurrentUser();
+        String uid = u != null ? u.getUid() : "null";
+        Toast.makeText(this, "UID: " + uid, Toast.LENGTH_LONG).show();
+
         long now = System.currentTimeMillis();
 
-        Map<String, Object> msg = new HashMap<>();
+        java.util.Map<String, Object> msg = new java.util.HashMap<>();
         msg.put("senderId", "admin");
-        msg.put("senderName", "ديوان أُمّة");
+        msg.put("senderName", "\u062f\u064a\u0648\u0627\u0646 \u0623\u0645\u0629");
         msg.put("senderType", "admin");
         msg.put("text", text);
         msg.put("createdAt", now);
@@ -238,12 +248,17 @@ public class AdminSupportChatActivity extends Activity {
         db.collection("support_tickets").document(ticketId)
             .collection("messages").add(msg)
             .addOnSuccessListener(doc -> {
-                Map<String, Object> upd = new HashMap<>();
+                Toast.makeText(this, "ADMIN_SENT_OK", Toast.LENGTH_SHORT).show();
+                java.util.Map<String, Object> upd = new java.util.HashMap<>();
                 upd.put("lastMessage", text);
                 upd.put("lastMessageAt", now);
                 upd.put("updatedAt", now);
                 upd.put("status", "in_progress");
                 db.collection("support_tickets").document(ticketId).update(upd);
+            })
+            .addOnFailureListener(e -> {
+                Toast.makeText(this, "ADMIN_ERR: " + e.getMessage(),
+                    Toast.LENGTH_LONG).show();
             });
     }
 
