@@ -70,5 +70,6 @@
     
         
     <activity android:name=".AdminWheelActivity" android:exported="false" android:screenOrientation="portrait" />
+            <activity android:name=".AdminNewsBotActivity" android:exported="false" android:screenOrientation="portrait" />
     </application>
 </manifest>
